@@ -176,7 +176,7 @@ func TestReadHandshakeMessage(t *testing.T) {
 	hm, err = h.ReadMessage()
 	assertNotError(t, err, "Failed to read a long handshake message")
 	assertDeepEquals(t, hm, longMessageIn)
-
+	
 	// Test successful read of multiple messages sequentially
 	b = bytes.NewBuffer(shortLongShort)
 	h = NewHandshakeLayer(NewRecordLayer(b))
