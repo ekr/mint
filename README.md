@@ -1,10 +1,11 @@
 ![A lock with a mint leaf](https://ipv.sx/mint/mint.svg)
 
-mint - A Minimal TLS 1.3 stack
+spearmint - A Minimal TLS 1.3 Reverse Firewall Implementation
 ==============================
 
 [![Build Status](https://circleci.com/gh/bifurcation/mint.svg)](https://circleci.com/gh/bifurcation/mint)
 
+TODO: Change all of this...
 This project is primarily a learning effort for me to understand the [TLS
 1.3](http://tlswg.github.io/tls13-spec/) protocol.  The goal is to arrive at a
 pretty complete implementation of TLS 1.3, with minimal, elegant code that
@@ -13,10 +14,10 @@ otherwise, the quality of the software engineering might not be at a level where
 it makes sense to integrate this with other libraries.  Backward compatibility
 is not an objective.
 
-We borrow liberally from the [Go TLS
+This project builds on top of the [mint TLS 1.3 implementation]() which in turn 
+borrows liberally from the [Go TLS
 library](https://golang.org/pkg/crypto/tls/), especially where TLS 1.3 aligns
-with earlier TLS versions.  However, unnecessary parts will be ruthlessly cut
-off.
+with earlier TLS versions.  
 
 ## Quickstart
 
