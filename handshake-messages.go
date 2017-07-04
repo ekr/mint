@@ -79,6 +79,10 @@ func (ch *ClientHelloBody) Unmarshal(data []byte) (int, error) {
 	return read, nil
 }
 
+//func SetToZero(a []byte) {
+//	for i,_ := range a { a[i] = 0 }
+//}
+
 // TODO: File a spec bug to clarify this
 func (ch ClientHelloBody) Truncated() ([]byte, error) {
 	if len(ch.Extensions) == 0 {

@@ -10,7 +10,7 @@ import (
 var addr string
 
 func main() {
-	flag.StringVar(&addr, "addr", "localhost:4430", "port")
+	flag.StringVar(&addr, "addr", "localhost:4431", "port")
 	flag.Parse()
 
 	conn, err := mint.Dial("tcp", addr, nil)
@@ -21,6 +21,7 @@ func main() {
 	}
 
 	request := "GET / HTTP/1.0\r\n\r\n"
+	//request := ""
 	conn.Write([]byte(request))
 
 	response := ""
@@ -32,6 +33,6 @@ func main() {
 		response += string(buffer)
 	}
 	fmt.Println("err:", err)
-	fmt.Println("Received from server:")
+	fmt.Println("Received from firewall:")
 	fmt.Println(response)
 }

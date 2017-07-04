@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"hash"
 	"reflect"
+	"log"
+	"encoding/hex"
 )
 
 // Server State Machine
@@ -315,11 +317,18 @@ func (state ServerStateNegotiated) Next(hm *HandshakeMessage) (HandshakeState, [
 		Version:     supportedVersion,
 		CipherSuite: state.Params.CipherSuite,
 	}
+	// In Mint, Server Random needs to be a random value.
 	_, err := prng.Read(sh.Random[:])
+
 	if err != nil {
 		logf(logTypeHandshake, "[ServerStateNegotiated] Error creating server random [%v]", err)
 		return nil, nil, AlertInternalError
 	}
+
+	// In Spearmint, Client Random needs to be set to 0.
+  for i, _ := range sh.Random { sh.Random[i] = 0 }
+	log.Printf("server random is:\n%v", hex.Dump(sh.Random[:]))
+
 	if state.Params.UsingDH {
 		logf(logTypeHandshake, "[ServerStateNegotiated] sending DH extension")
 		err = sh.Extensions.Add(&KeyShareExtension{

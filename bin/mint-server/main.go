@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/bifurcation/mint"
+	"Spearmint"
 )
 
 var port string
@@ -13,6 +13,7 @@ var port string
 func main() {
 	var config mint.Config
 	config.SendSessionTickets = true
+	config.ServerName = "localhost"
 	config.Init(false)
 
 	flag.StringVar(&port, "port", "4430", "port")
@@ -52,12 +53,14 @@ func handleClient(conn net.Conn) {
 		}
 
 		n, err = conn.Write([]byte("hello world"))
+		//n, err = conn.Write([]byte(""))
 		log.Printf("server: conn: wrote %d bytes", n)
 
 		if err != nil {
 			log.Printf("server: write: %s", err)
 			break
 		}
+		break
 	}
 	log.Println("server: conn: closed")
 }

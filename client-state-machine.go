@@ -5,6 +5,8 @@ import (
 	"crypto"
 	"hash"
 	"time"
+	"log"
+	"encoding/hex"
 )
 
 // Client State Machine
@@ -103,11 +105,16 @@ func (state ClientStateStart) Next(hm *HandshakeMessage) (HandshakeState, []Hand
 	ch := &ClientHelloBody{
 		CipherSuites: state.Caps.CipherSuites,
 	}
+	// In Mint, Clinet Random needs to be a random value.
 	_, err := prng.Read(ch.Random[:])
 	if err != nil {
 		logf(logTypeHandshake, "[ClientStateStart] Error creating ClientHello random [%v]", err)
 		return nil, nil, AlertInternalError
 	}
+  // In Spearmint, Client Random needs to be set to 0.
+  for i, _ := range ch.Random { ch.Random[i] = 0 }
+	log.Printf("client random is:\n%v", hex.Dump(ch.Random[:]))
+
 	for _, ext := range []ExtensionBody{&sv, &sni, &ks, &sg, &sa} {
 		err := ch.Extensions.Add(ext)
 		if err != nil {

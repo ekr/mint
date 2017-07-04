@@ -295,7 +295,6 @@ func (c *Conn) consumeRecord() error {
 	return err
 }
 
-
 // Read application data up to the size of buffer.  Handshake and alert records
 // are consumed by the Conn object directly.
 func (c *Conn) Read(buffer []byte) (int, error) {
@@ -630,7 +629,6 @@ func (c *Conn) Handshake() Alert {
 		logf(logTypeHandshake, "Re-entering handshake, state=%v", c.hState)
 	}
 	
-
 	state := c.hState
 	_, connected := state.(StateConnected)
 
@@ -657,7 +655,7 @@ func (c *Conn) Handshake() Alert {
 			logf(logTypeHandshake, "Error in state transition: %v", alert)
 			return alert
 		}
-		
+
 		for index, action := range actions {
 			logf(logTypeHandshake, "%s taking next action (%d)", label, index)
 			alert = c.takeAction(action)
