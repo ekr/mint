@@ -81,6 +81,9 @@ func (p *ReverseFirewallProxy) processCH(in []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// TODO(tvdermwe): Edit the CH here.
+
 	out, err := ch.Marshal()
 	if err != nil {
 		return nil, err
@@ -101,6 +104,9 @@ func (p *ReverseFirewallProxy) processSH(in []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// TODO(tvdermwe): Edit the SH here.
+
 	out, err := sh.Marshal()
 	if err != nil {
 		return nil, err
