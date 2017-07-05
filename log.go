@@ -19,6 +19,7 @@ const (
 	logTypeIO          = "io"
 	logTypeFrameReader = "frame"
 	logTypeVerbose     = "verbose"
+	logTypeFirewall    = "firewall"
 )
 
 var (

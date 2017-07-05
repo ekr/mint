@@ -37,7 +37,7 @@ type RecordLayer struct {
 	sync.Mutex
 
 	conn         io.ReadWriter // The underlying connection
-	frame        *frameReader  // The buffered frame reader
+	frame        *FrameReader  // The buffered frame reader
 	nextData     []byte        // The next record to send
 	cachedRecord *TLSPlaintext // Last record read, cached to enable "peek"
 	cachedError  error         // Error on the last record read
@@ -65,7 +65,7 @@ func (d recordLayerFrameDetails) frameLen(hdr []byte) (int, error) {
 func NewRecordLayer(conn io.ReadWriter) *RecordLayer {
 	r := RecordLayer{}
 	r.conn = conn
-	r.frame = newFrameReader(recordLayerFrameDetails{})
+	r.frame = NewFrameReader(recordLayerFrameDetails{})
 	r.ivLength = 0
 	return &r
 }
@@ -215,10 +215,10 @@ func (r *RecordLayer) nextRecord() (*TLSPlaintext, error) {
 			logf(logTypeIO, "Read %v bytes", n)
 
 			buf = buf[:n]
-			r.frame.addChunk(buf)
+			r.frame.AddChunk(buf)
 		}
 
-		header, body, err = r.frame.process()
+		header, body, err = r.frame.Process()
 		// Loop around on WouldBlock to see if some
 		// data is now available.
 		if err != nil && err != WouldBlock {

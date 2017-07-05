@@ -31,43 +31,43 @@ func checkFrame(t *testing.T, hdr []byte, body []byte) {
 }
 
 func TestFrameReaderFullFrame(t *testing.T) {
-	r := newFrameReader(simpleHeader{})
-	r.addChunk(kTestFrame)
-	hdr, body, err := r.process()
+	r := NewFrameReader(simpleHeader{})
+	r.AddChunk(kTestFrame)
+	hdr, body, err := r.Process()
 	assertNotError(t, err, "Couldn't read frame 1")
 	checkFrame(t, hdr, body)
 
-	r.addChunk(kTestFrame)
-	hdr, body, err = r.process()
+	r.AddChunk(kTestFrame)
+	hdr, body, err = r.Process()
 	assertNotError(t, err, "Couldn't read frame 2")
 	checkFrame(t, hdr, body)
 }
 
 func TestFrameReaderTwoFrames(t *testing.T) {
-	r := newFrameReader(simpleHeader{})
-	r.addChunk(kTestFrame)
-	r.addChunk(kTestFrame)
-	hdr, body, err := r.process()
+	r := NewFrameReader(simpleHeader{})
+	r.AddChunk(kTestFrame)
+	r.AddChunk(kTestFrame)
+	hdr, body, err := r.Process()
 	assertNotError(t, err, "Couldn't read frame 1")
 	checkFrame(t, hdr, body)
 
-	hdr, body, err = r.process()
+	hdr, body, err = r.Process()
 	assertNotError(t, err, "Couldn't read frame 2")
 	checkFrame(t, hdr, body)
 }
 
 func TestFrameReaderTrickle(t *testing.T) {
-	r := newFrameReader(simpleHeader{})
+	r := NewFrameReader(simpleHeader{})
 
 	var hdr, body []byte
 	var err error
 	for i := 0; i <= len(kTestFrame); i += 1 {
-		hdr, body, err = r.process()
+		hdr, body, err = r.Process()
 		if i < len(kTestFrame) {
 			assertEquals(t, err, WouldBlock)
 			assertEquals(t, 0, len(hdr))
 			assertEquals(t, 0, len(body))
-			r.addChunk(kTestFrame[i : i+1])
+			r.AddChunk(kTestFrame[i : i+1])
 		}
 	}
 	assertNil(t, err, "Error reading")

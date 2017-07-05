@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	"Spearmint"
+	"github.com/bifurcation/mint"
 )
 
 var port string
