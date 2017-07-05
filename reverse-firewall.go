@@ -92,8 +92,23 @@ func (p *ReverseFirewallProxy) processCH(in []byte) ([]byte, error) {
 }
 
 func (p *ReverseFirewallProxy) processSH(in []byte) ([]byte, error) {
+	shb, err := parsePacket(HandshakeTypeClientHello, in)
+	if err != nil {
+		return nil, err
+	}
+	var sh ServerHelloBody
+	_, err = sh.Unmarshal(shb)
+	if err != nil {
+		return nil, err
+	}
+	out, err := sh.Marshal()
+	if err != nil {
+		return nil, err
+	}
 	p.readSH = true
-	return in, nil
+
+	pkt := writePacket(HandshakeTypeServerHello, out)
+	return pkt, nil
 }
 
 func (p *ReverseFirewallProxy) ProcessMessage(d Direction, in []byte) (out []byte, err error) {
