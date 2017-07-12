@@ -3,12 +3,11 @@ package main
 // Adapted from: https://gist.github.com/vmihailenco/1380352
 
 import (
-	"encoding/hex"
 	"flag"
 	"fmt"
-	"log"
+	"github.com/bifurcation/mint"
+	"io"
 	"net"
-
 )
 
 var localAddress *string = flag.String("l", "localhost:4431", "Local address")
@@ -41,6 +40,8 @@ func main() {
 }
 
 func proxyConnection(conn *net.TCPConn) {
+	proxy := mint.NewReverseFirewallProxy()
+
 	rAddr, err := net.ResolveTCPAddr("tcp", *remoteAddress)
 	if err != nil {
 		panic(err)
@@ -58,14 +59,19 @@ func proxyConnection(conn *net.TCPConn) {
 		for {
 			data := make([]byte, 1024*1024)
 			n, err := conn.Read(data)
+			if err == io.EOF {
+				return
+			}
 			if err != nil {
 				panic(err)
 			}
 
-      // Here we need to read frame, if CHello, modify the key share before sending.
-      
-			rConn.Write(data[:n])
-			log.Printf("received from client and sent to server:\n%v", hex.Dump(data[:n]))
+			// Here we need to read frame, if CHello, modify the key share before sending.
+			out, err := proxy.ProcessMessage(mint.C2S, data[:n])
+			if err != nil {
+				panic(err)
+			}
+			rConn.Write(out)
 		}
 	}()
 
@@ -73,11 +79,18 @@ func proxyConnection(conn *net.TCPConn) {
 	for {
 		data := make([]byte, 1024*1024)
 		n, err := rConn.Read(data)
+		if err == io.EOF {
+			return
+		}
 		if err != nil {
 			panic(err)
 		}
-		conn.Write(data[:n])
-		log.Printf("received from server and sent to client:\n%v", hex.Dump(data[:n]))
+		out, err := proxy.ProcessMessage(mint.C2S, data[:n])
+		if err != nil {
+			panic(err)
+		}
+
+		conn.Write(out)
 	}
 
 }

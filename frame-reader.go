@@ -2,8 +2,7 @@
 // This is used for both TLS Records and TLS Handshake Messages
 package mint
 
-import (
-)
+import ()
 
 type framing interface {
 	headerLen() int
@@ -16,9 +15,9 @@ const (
 	kFrameReaderBody = 1
 )
 
-type frameNextAction func(f *frameReader) error
+type frameNextAction func(f *FrameReader) error
 
-type frameReader struct {
+type FrameReader struct {
 	details     framing
 	state       uint8
 	header      []byte
@@ -28,9 +27,9 @@ type frameReader struct {
 	remainder   []byte
 }
 
-func newFrameReader(d framing) *frameReader {
+func NewFrameReader(d framing) *FrameReader {
 	hdr := make([]byte, d.headerLen())
-	return &frameReader{
+	return &FrameReader{
 		d,
 		kFrameReaderHdr,
 		hdr,
@@ -47,7 +46,7 @@ func dup(a []byte) []byte {
 	return r
 }
 
-func (f *frameReader) needed() int {
+func (f *FrameReader) needed() int {
 	tmp := (len(f.working) - f.writeOffset) - len(f.remainder)
 	if tmp < 0 {
 		return 0
@@ -55,13 +54,13 @@ func (f *frameReader) needed() int {
 	return tmp
 }
 
-func (f *frameReader) addChunk(in []byte) {
+func (f *FrameReader) AddChunk(in []byte) {
 	// Append to the buffer.
 	logf(logTypeFrameReader, "Appending %v", len(in))
 	f.remainder = append(f.remainder, in...)
 }
 
-func (f *frameReader) process() (hdr []byte, body []byte, err error) {
+func (f *FrameReader) Process() (hdr []byte, body []byte, err error) {
 	for f.needed() == 0 {
 		logf(logTypeFrameReader, "%v bytes needed for next block", len(f.working)-f.writeOffset)
 		// Fill out our working block
@@ -77,7 +76,7 @@ func (f *frameReader) process() (hdr []byte, body []byte, err error) {
 
 		// We have read a full frame
 		if f.state == kFrameReaderBody {
-			logf(logTypeFrameReader, "Returning frame hdr=%h len=%d buffered=%d", f.header, len(f.body), len(f.remainder))
+			logf(logTypeFrameReader, "Returning frame hdr=%v len=%d buffered=%d", f.header, len(f.body), len(f.remainder))
 			f.state = kFrameReaderHdr
 			f.working = f.header
 			return dup(f.header), dup(f.body), nil

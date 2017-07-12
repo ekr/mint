@@ -20,6 +20,7 @@ func main() {
 		return
 	}
 
+	fmt.Println("TLS handshake succeeded")
 	request := "GET / HTTP/1.0\r\n\r\n"
 	//request := ""
 	conn.Write([]byte(request))
