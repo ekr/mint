@@ -113,7 +113,7 @@ func (state ClientStateStart) Next(hm *HandshakeMessage) (HandshakeState, []Hand
 	}
   // In Spearmint, Client Random needs to be set to 0.
   for i, _ := range ch.Random { ch.Random[i] = 0 }
-	log.Printf("client random is:\n%v", hex.Dump(ch.Random[:]))
+	log.Printf("client random is:\n%v", hex.Dump(ch.Random[:])) 
 
 	for _, ext := range []ExtensionBody{&sv, &sni, &ks, &sg, &sa} {
 		err := ch.Extensions.Add(ext)
