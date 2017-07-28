@@ -226,6 +226,7 @@ func ffdheKeyShareFromPrime(p *big.Int) (priv, pub *big.Int, err error) {
 	return
 }
 
+// Add a bool value here: bool isClient
 func newKeyShare(group NamedGroup) (pub []byte, priv []byte, err error) {
 	switch group {
 	case P256, P384, P521:

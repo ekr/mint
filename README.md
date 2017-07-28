@@ -1,89 +1,76 @@
-![A lock with a mint leaf](https://ipv.sx/mint/mint.svg)
+![A lock with a mint leaf](mint.svg)
 
 spearmint - A Minimal TLS 1.3 Reverse Firewall Implementation
 ==============================
 
-[![Build Status](https://circleci.com/gh/bifurcation/mint.svg)](https://circleci.com/gh/bifurcation/mint)
+<! -- [![Build Status](https://circleci.com/gh/bifurcation/mint.svg)](https://circleci.com/gh/bifurcation/mint)
+-->
 
-TODO: Change all of this...
-This project is primarily a learning effort for me to understand the [TLS
-1.3](http://tlswg.github.io/tls13-spec/) protocol.  The goal is to arrive at a
-pretty complete implementation of TLS 1.3, with minimal, elegant code that
-demonstrates how things work.  Testing is a priority to ensure correctness, but
-otherwise, the quality of the software engineering might not be at a level where
-it makes sense to integrate this with other libraries.  Backward compatibility
-is not an objective.
-
-This project builds on top of the [mint TLS 1.3 implementation]() which in turn 
-borrows liberally from the [Go TLS
+This project serves as a Proof-of-Concept (PoC) for the TLS 1.3 cryptographic reverse
+firewall construction presented in [Reverse Firewalls for Secure-Channel Establishment
+Revisited: Towards reverse firewalls for TLS 1.3](add paper link). The project builds
+on top of the [mint TLS 1.3 implementation](https://github.com/bifurcation/mint) which
+in turn borrows liberally from the [Go TLS
 library](https://golang.org/pkg/crypto/tls/), especially where TLS 1.3 aligns
-with earlier TLS versions.  
+with earlier TLS versions.
+
+In order to successfully implement a reverse firewall for TLS 1.3, several modifications
+to the protocol need to be effected. We briefly note these modifications here and
+refer readers to the academic paper for further details:
+
+1. **Nonces.** In order to avoid exfiltration of data via the client and server
+nonces, these values are set to 0.
+
+2. **Pairing-friendly curves.** The construction relies on an intelligent use of
+bilinear pairings. As TLS 1.3 currently does not support pairing-friendly curves
+(and associated groups) we modify the Mint implementation to enable use of
+Barreto-Naehrig curves at the 128-bit security level. We make use of [bn256](https://godoc.org/golang.org/x/crypto/bn256) Go
+package.
+
+3. **Session hash.** We adapt the session hash to account for the malleability
+introduced by the firewall.
+
+4. **Key schedule separation.** In order to allow for the firewall to effectively
+provide protection from exfiltration of data without knowing the application data
+traffic keys shared between a client and a server, we spilt or "spear" the TLS 1.3 key
+schedule into two distinct trees.
+
+5. **Double encryption.** We implement double encryption at the record layer to
+prevent exfiltration of sensitive data over the secure channel.  
+
+## Performance
+
+TODO: Add text here when complete.
 
 ## Quickstart
 
-Installation is the same as for any other Go package:
+Installation is identical to any other Go package:
 
 ```
-go get github.com/bifurcation/mint
+go get github.com/tvdmerwe/spearmint
 ```
+TODO: Make active when ready.
 
-The API is pretty much the same as for the TLS module, with `Dial` and `Listen`
-methods wrapping the underlying socket APIs.
+Documentation is available on ...
+TODO: Add this if necessary.
+<! -- [godoc.org](https://godoc.org/github.com/bifurcation/mint) -->
 
-```
-conn, err := mint.Dial("tcp", "localhost:4430", &mint.Config{...})
-...
-listener, err := mint.Listen("tcp", "localhost:4430", &mint.Config{...})
-```
+## Testing
 
-Documentation is available on
-[godoc.org](https://godoc.org/github.com/bifurcation/mint)
-
-
-## Interoperability testing
-
-The `mint-client` and `mint-server` executables are included to make it easy to
-do basic interoperability tests with other TLS 1.3 implementations.  The steps
-for testing against NSS are as follows.
+The `mint-client`, `mint-server` and `mint-firewall` executables are included
+to make it easy to confirm operation. The steps
+for testing are as follows:
 
 ```
-# Install mint
-go get github.com/bifurcation/mint
+# Install spearmint
+go get github.com/tvdmerwe/spearmint
 
-# Environment for NSS (you'll probably want a new directory)
-NSS_ROOT=<whereever you want to put NSS>
-mkdir $NSS_ROOT
-cd $NSS_ROOT
-export USE_64=1
-export ENABLE_TLS_1_3=1
-export HOST=localhost
-export DOMSUF=localhost
+# Test with client=spearmint firewall=spearmint server=spearmint
+# Open a terminal window for the firewall
+go run $GOPATH/src/github.com/tvdmerwe/spearmint/bin/mint-firewall/main.go
+# Open a terminal window for the server
+go run $GOPATH/src/github.com/tvdmerwe/spearmint/bin/mint-server/main.go
+# Open a terminal window for the client
+go run $GOPATH/src/github.com/tvdmerwe/spearmint/bin/mint-client/main.go
 
-# Build NSS
-hg clone https://hg.mozilla.org/projects/nss
-hg clone https://hg.mozilla.org/projects/nspr
-cd nss
-make nss_build_all
-
-export PLATFORM=`cat $NSS_ROOT/dist/latest`
-export DYLD_LIBRARY_PATH=$NSS_ROOT/dist/$PLATFORM/lib
-export LD_LIBRARY_PATH=$NSS_ROOT/dist/$PLATFORM/lib
-
-# Run NSS tests (this creates data for the server to use)
-cd tests/ssl_gtests
-./ssl_gtests.sh
-
-# Test with client=mint server=NSS
-cd $NSS_ROOT
-./dist/$PLATFORM/bin/selfserv -d tests_results/security/$HOST.1/ssl_gtests/ -n rsa -p 4430
-# if you get `NSS_Init failed.`, check the path above, particularly around $HOST
-# ...
-go run $GOPATH/src/github.com/bifurcation/mint/bin/mint-client/main.go
-
-# Test with client=NSS server=mint
-go run $GOPATH/src/github.com/bifurcation/mint/bin/mint-server/main.go
-# ...
-cd $NSS_ROOT
-dist/$PLATFORM/bin/tstclnt -d tests_results/security/$HOST/ssl_gtests/ -V tls1.3:tls1.3 -h 127.0.0.1 -p 4430 -o
 ```
-
