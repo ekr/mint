@@ -1,4 +1,4 @@
-![](https://github.com/tvdmerwe/spearmint/blob/dev/mint.svg)
+![logo not rendering](mint.svg)
 
 spearmint - A Minimal TLS 1.3 Reverse Firewall Implementation
 ==============================
