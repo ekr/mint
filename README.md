@@ -1,14 +1,11 @@
-![A lock with a mint leaf](mint.svg)
+![](mint.svg?raw=true)
 
 spearmint - A Minimal TLS 1.3 Reverse Firewall Implementation
 ==============================
 
-<! -- [![Build Status](https://circleci.com/gh/bifurcation/mint.svg)](https://circleci.com/gh/bifurcation/mint)
--->
-
 This project serves as a Proof-of-Concept (PoC) for the TLS 1.3 cryptographic reverse
 firewall construction presented in [Reverse Firewalls for Secure-Channel Establishment
-Revisited: Towards reverse firewalls for TLS 1.3](add paper link). The project builds
+Revisited: Towards reverse firewalls for TLS 1.3](). The project builds
 on top of the [mint TLS 1.3 implementation](https://github.com/bifurcation/mint) which
 in turn borrows liberally from the [Go TLS
 library](https://golang.org/pkg/crypto/tls/), especially where TLS 1.3 aligns
@@ -52,6 +49,7 @@ go get github.com/tvdmerwe/spearmint
 TODO: Make active when ready.
 
 Documentation is available on ...
+
 TODO: Add this if necessary.
 <! -- [godoc.org](https://godoc.org/github.com/bifurcation/mint) -->
 
