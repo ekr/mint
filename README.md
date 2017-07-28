@@ -1,4 +1,4 @@
-![](mint.svg?raw=true)
+![](https://github.com/tvdmerwe/spearmint/blob/dev/mint.svg)
 
 spearmint - A Minimal TLS 1.3 Reverse Firewall Implementation
 ==============================
