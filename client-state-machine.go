@@ -51,6 +51,8 @@ import (
 //  WAIT_FINISHED			RekeyIn; [Send(EOED);] RekeyOut; [SendCert; SendCV;] SendFin; RekeyOut;
 //  CONNECTED					StoreTicket || (RekeyIn; [RekeyOut])
 
+var isClient bool = true
+
 type ClientStateStart struct {
 	Caps   Capabilities
 	Opts   ConnectionOptions
@@ -74,7 +76,7 @@ func (state ClientStateStart) Next(hm *HandshakeMessage) (HandshakeState, []Hand
 		Shares:        make([]KeyShareEntry, len(state.Caps.Groups)),
 	}
 	for i, group := range state.Caps.Groups {
-		pub, priv, err := newKeyShare(group)
+		pub, priv, err := newKeyShare(group, isClient)
 		if err != nil {
 			logf(logTypeHandshake, "[ClientStateStart] Error generating key share [%v]", err)
 			return nil, nil, AlertInternalError
@@ -113,7 +115,7 @@ func (state ClientStateStart) Next(hm *HandshakeMessage) (HandshakeState, []Hand
 	}
   // In Spearmint, Client Random needs to be set to 0.
   for i, _ := range ch.Random { ch.Random[i] = 0 }
-	log.Printf("client random is:\n%v", hex.Dump(ch.Random[:])) 
+	log.Printf("client random is:\n%v", hex.Dump(ch.Random[:]))
 
 	for _, ext := range []ExtensionBody{&sv, &sni, &ks, &sg, &sa} {
 		err := ch.Extensions.Add(ext)

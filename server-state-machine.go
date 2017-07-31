@@ -127,7 +127,7 @@ func (state ServerStateStart) Next(hm *HandshakeMessage) (HandshakeState, []Hand
 	}
 
 	// Figure out if we can do DH
-	canDoDH, dhGroup, dhPublic, dhSecret := DHNegotiation(clientKeyShares.Shares, state.Caps.Groups)
+	canDoDH, dhGroup, dhPublic, dhSecret := DHNegotiation(clientKeyShares.Shares, state.Caps.Groups, false)
 
 	// Figure out if we can do PSK
 	canDoPSK := false

@@ -22,14 +22,15 @@ func VersionNegotiation(offered, supported []uint16) (bool, uint16) {
 	return false, 0
 }
 
-func DHNegotiation(keyShares []KeyShareEntry, groups []NamedGroup) (bool, NamedGroup, []byte, []byte) {
+// Maybe need to add bool isClient
+func DHNegotiation(keyShares []KeyShareEntry, groups []NamedGroup, isClient bool) (bool, NamedGroup, []byte, []byte) {
 	for _, share := range keyShares {
 		for _, group := range groups {
 			if group != share.Group {
 				continue
 			}
 
-			pub, priv, err := newKeyShare(share.Group)
+			pub, priv, err := newKeyShare(share.Group, isClient)
 			if err != nil {
 				// If we encounter an error, just keep looking
 				continue

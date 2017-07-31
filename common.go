@@ -101,6 +101,7 @@ const (
 	// ECDH functions.
 	X25519 NamedGroup = 29
 	X448   NamedGroup = 30
+	BN256  NamedGroup = 31
 	// Finite field groups.
 	FFDHE2048 NamedGroup = 256
 	FFDHE3072 NamedGroup = 257
