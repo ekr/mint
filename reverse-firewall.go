@@ -6,6 +6,9 @@ import (
 	"fmt"
 )
 
+// var kspub [192]bytes - this has gy and hzx in it - need to construct this as
+// you get the values, and then feed into keyAgreementForFirewall function (crypto.go).
+
 func parsePacket(ht HandshakeType, b []byte) (payload []byte, err error) {
 	// Read record header
 	if b[0] != 22 {
@@ -82,7 +85,8 @@ func (p *ReverseFirewallProxy) processCH(in []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// TODO(tvdermwe): Edit the CH here.
+	// TODO(tvdermwe): Edit the CH here. Here I need to get the BN256 keyshare value
+	// and feed it into the rerandomizeForAgent function (crypto.go).
 
 	out, err := ch.Marshal()
 	if err != nil {
@@ -105,7 +109,8 @@ func (p *ReverseFirewallProxy) processSH(in []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// TODO(tvdermwe): Edit the SH here.
+	// TODO(tvdermwe): Edit the SH here. Here I need to get the BN256 keyshare value
+	// and feed it into the rerandomizeForAgent function (crypto.go).
 
 	out, err := sh.Marshal()
 	if err != nil {

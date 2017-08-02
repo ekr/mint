@@ -375,7 +375,7 @@ func keyAgreement(group NamedGroup, pub []byte, priv []byte) ([]byte, error) {
 		agcfs := bn256.Pair(X, h)
 		agcfs = gt.ScalarMult(agcfs, x)
 
-		h := crypto.SHA256.New() // Only need to create one hash object?
+		h := crypto.SHA256.New() // Only need to create one hash object? Do we actually need different hash functions?
     h.Write(agcs.Marshal())
 	  kcs := h.Sum(nil)
 		//h2 := crypto.SHA256.New()
@@ -562,15 +562,53 @@ func verify(alg SignatureScheme, publicKey crypto.PublicKey, sigInput []byte, si
 }
 
 // Firewall specific funcitons
-func rerandomizeForClient() {
+func rerandomizeForAgent(pubIn []byte) (pub []byte, err error) {
+
+	var public, public1, public2, pub1, pub2 []byte
+	err = nil //TODO: Add err check.
+
+	pub1 = pubIn[:64]
+	pub2 = pubIn[64:]
+
+	keyShare1, _ := g1.Unmarshal(pub1)
+	keyShare2, _ := g2.Unmarshal(pub2)
+
+	ks1chi := g1.ScalarMult(keyShare1,chi)
+	ks2chi := g2.ScalarMult(keyShare2,chi)
+
+	public1 = ks1chi.Marshal()
+	public2 = ks2chi.Marshal()
+
+	public = append(public1, public2...)
+	pub = public[:]
+	return
 
 }
 
-func rerandomizeForServer(){
+func keyAgreementForFirewall(pub []byte) ([]byte, error){
 
-}
+	if len(pub) != 192 {
+		return nil, fmt.Errorf("tls.keyagreement: Wrong public key size")
+	}
 
-func keyAgreementForFirewall(){
+	var public [192]byte
+	var public1, public2, ret []byte
+
+	copy(public[:], pub)
+	public1 = public[:64]
+	X, _ := g1.Unmarshal(public1)
+	public2 = public[64:]
+	Y, _ := g2.Unmarshal(public2)
+  Ychi := g2.ScalarMult(Y,chi)
+
+	agcfs := bn256.Pair(X,Ychi)
+	agcfs = gt.ScalarMult(agcfs, zneg)
+
+	h := crypto.SHA256.New() //Q: Do we need different hash functions -- see previous Q?
+	h.Write(agcfs.Marshal())
+	ret = h.Sum(nil)
+
+	return ret[:], nil
 
 }
 
