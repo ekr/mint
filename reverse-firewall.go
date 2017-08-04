@@ -85,8 +85,8 @@ func (p *ReverseFirewallProxy) processCH(in []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// TODO(tvdermwe): Edit the CH here. Here I need to get the BN256 keyshare value
-	// and feed it into the rerandomizeForAgent function (crypto.go).
+	// TODO(tvdermwe): Edit the CH here. EKR: Here I need to get the BN256 keyshare value
+	// and feed it into the rerandomizeForAgent function (crypto.go). So, it will be chb.Extensions....?
 
 	out, err := ch.Marshal()
 	if err != nil {
@@ -109,7 +109,7 @@ func (p *ReverseFirewallProxy) processSH(in []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// TODO(tvdermwe): Edit the SH here. Here I need to get the BN256 keyshare value
+	// TODO(tvdermwe): Edit the SH here. EKR: Here I need to get the BN256 keyshare value
 	// and feed it into the rerandomizeForAgent function (crypto.go).
 
 	out, err := sh.Marshal()
