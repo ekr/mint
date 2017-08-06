@@ -53,7 +53,7 @@ func TestNewKeyShare(t *testing.T) {
 	// Test success cases
 	for _, group := range ecGroups {
 		// priv is opaque, so there's nothing we can do to test besides use
-		pub, priv, err := newKeyShare(group)
+		pub, priv, err := newKeyShare(group, true)
 		assertNotError(t, err, "Failed to generate new key pair")
 		assertNotNil(t, priv, "Private key is nil")
 		assertEquals(t, len(pub), keyExchangeSizeFromNamedGroup(group))
@@ -65,7 +65,7 @@ func TestNewKeyShare(t *testing.T) {
 	}
 
 	for _, group := range nonECGroups {
-		priv, pub, err := newKeyShare(group)
+		priv, pub, err := newKeyShare(group, true)
 		assertNotError(t, err, "Failed to generate new key pair")
 		assertNotNil(t, priv, "Private key is nil")
 		assertEquals(t, len(pub), keyExchangeSizeFromNamedGroup(group))
@@ -74,26 +74,26 @@ func TestNewKeyShare(t *testing.T) {
 	// Test failure case for an elliptic curve key generation failure
 	originalPRNG := prng
 	prng = bytes.NewReader(nil)
-	_, _, err := newKeyShare(P256)
+	_, _, err := newKeyShare(P256, true)
 	assertError(t, err, "Generated an EC key with no entropy")
 	prng = originalPRNG
 
 	// Test failure case for an finite field key generation failure
 	originalPRNG = prng
 	prng = bytes.NewReader(nil)
-	_, _, err = newKeyShare(FFDHE2048)
+	_, _, err = newKeyShare(FFDHE2048, true)
 	assertError(t, err, "Generated a FF key with no entropy")
 	prng = originalPRNG
 
 	// Test failure case for an X25519 key generation failure
 	originalPRNG = prng
 	prng = bytes.NewReader(nil)
-	_, _, err = newKeyShare(X25519)
+	_, _, err = newKeyShare(X25519, true)
 	assertError(t, err, "Generated an X25519 key with no entropy")
 	prng = originalPRNG
 
 	// Test failure case for an unknown group
-	_, _, err = newKeyShare(NamedGroup(0))
+	_, _, err = newKeyShare(NamedGroup(0), true)
 	assertError(t, err, "Generated a key for an unsupported group")
 }
 
@@ -103,9 +103,9 @@ func TestKeyAgreement(t *testing.T) {
 
 	// Test success cases
 	for _, group := range dhGroups {
-		pubA, privA, err := newKeyShare(group)
+		pubA, privA, err := newKeyShare(group, true)
 		assertNotError(t, err, "Failed to generate new key pair (A)")
-		pubB, privB, err := newKeyShare(group)
+		pubB, privB, err := newKeyShare(group, false)
 		assertNotError(t, err, "Failed to generate new key pair (B)")
 
 		x1, err1 := keyAgreement(group, pubA, privB)
