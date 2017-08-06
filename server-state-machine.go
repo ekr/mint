@@ -336,6 +336,7 @@ func (state ServerStateNegotiated) Next(hm *HandshakeMessage) (HandshakeState, [
 			Shares:        []KeyShareEntry{{Group: state.dhGroup, KeyExchange: state.dhPublic}},
 		})
 		if err != nil {
+			log.Printf("[ServerStateNegotiated] Error adding key_shares extension [%v]", err)
 			logf(logTypeHandshake, "[ServerStateNegotiated] Error adding key_shares extension [%v]", err)
 			return nil, nil, AlertInternalError
 		}

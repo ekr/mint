@@ -86,7 +86,8 @@ func proxyConnection(conn *net.TCPConn) {
 		if err != nil {
 			panic(err)
 		}
-		out, err := proxy.ProcessMessage(mint.C2S, data[:n])
+
+		out, err := proxy.ProcessMessage(mint.S2C, data[:n]) //The direction here used to be C2S.
 		if err != nil {
 			panic(err)
 		}

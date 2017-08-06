@@ -152,6 +152,7 @@ var (
 		P384,
 		FFDHE2048,
 		X25519,
+		BN256,
 	}
 
 	defaultSignatureSchemes = []SignatureScheme{
@@ -628,7 +629,7 @@ func (c *Conn) Handshake() Alert {
 	} else {
 		logf(logTypeHandshake, "Re-entering handshake, state=%v", c.hState)
 	}
-	
+
 	state := c.hState
 	_, connected := state.(StateConnected)
 

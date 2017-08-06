@@ -85,8 +85,19 @@ func (p *ReverseFirewallProxy) processCH(in []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// TODO(tvdermwe): Edit the CH here. EKR: Here I need to get the BN256 keyshare value
-	// and feed it into the rerandomizeForAgent function (crypto.go). So, it will be chb.Extensions....?
+	clientKeyShares := &KeyShareExtension{HandshakeType: HandshakeTypeClientHello}
+	ch.Extensions.Find(clientKeyShares)
+
+	for i := range clientKeyShares.Shares {
+	if clientKeyShares.Shares[i].Group == BN256 {
+		 fmt.Printf("A client group found is BN256.\n")
+	   oldKeyShare := clientKeyShares.Shares[i].KeyExchange // Can possibly collapse this fuction
+			//for elegance.
+	   newKeyShare, _ := rerandomizeForAgent(oldKeyShare)
+	   clientKeyShares.Shares[i].KeyExchange = newKeyShare
+		 fmt.Print("Key share rerandomized for server.\n") // TODO: Add equality checks to see if values match up.
+		}
+	}
 
 	out, err := ch.Marshal()
 	if err != nil {
@@ -99,7 +110,7 @@ func (p *ReverseFirewallProxy) processCH(in []byte) ([]byte, error) {
 }
 
 func (p *ReverseFirewallProxy) processSH(in []byte) ([]byte, error) {
-	shb, err := parsePacket(HandshakeTypeClientHello, in)
+	shb, err := parsePacket(HandshakeTypeServerHello, in)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +120,23 @@ func (p *ReverseFirewallProxy) processSH(in []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// TODO(tvdermwe): Edit the SH here. EKR: Here I need to get the BN256 keyshare value
-	// and feed it into the rerandomizeForAgent function (crypto.go).
+	fmt.Printf("We reach the SH change in the code.")
+
+	serverKeyShare := &KeyShareExtension{HandshakeType: HandshakeTypeServerHello}
+	sh.Extensions.Find(serverKeyShare)
+
+	//for i := range serverKeyShare.Shares { //TODO: Should be able to collapse here, server only sends 1 share.
+	if serverKeyShare.Shares[0].Group == BN256 {
+		 fmt.Printf("The server group found is BN256.\n")
+	//   oldKeyShare := serverKeyShare.Shares[i].KeyExchange // Can possibly collapse this fuction
+			//for elegance.
+	//   newKeyShare, _ := rerandomizeForAgent(oldKeyShare)
+	//   serverKeyShare.Shares[i].KeyExchange = newKeyShare
+	//	 fmt.Print("Key share rerandomized for server.\n") // TODO: Add equality checks to see if values match up.
+	}
+//	}
+
+	//TODO: Here the FW needs to compute the FW key, for use in re-encryption.
 
 	out, err := sh.Marshal()
 	if err != nil {
@@ -138,6 +164,7 @@ func (p *ReverseFirewallProxy) ProcessMessage(d Direction, in []byte) (out []byt
 		logf(logTypeFirewall, "%v: out %v bytes", dir, hex.EncodeToString(out))
 	default:
 		out = in
+		// TODO: Here will need to re-encrypt using firewall key.
 	}
 	return
 }
