@@ -787,6 +787,23 @@ func (c *Conn) Handshake() Alert {
 		if connected {
 			c.state = state.(StateConnected)
 			c.handshakeComplete = true
+
+			// Send NewSessionTicket if acting as server
+			if !c.isClient && c.config.SendSessionTickets {
+				actions, alert := c.state.NewSessionTicket(
+					c.config.TicketLen,
+					c.config.TicketLifetime,
+					c.config.EarlyDataLifetime)
+
+				for _, action := range actions {
+					alert = c.takeAction(action)
+					if alert != AlertNoAlert {
+						logf(logTypeHandshake, "Error during handshake actions: %v", alert)
+						c.sendAlert(alert)
+						return alert
+					}
+				}
+			}
 		}
 
 		if c.config.NonBlocking {
@@ -794,23 +811,6 @@ func (c *Conn) Handshake() Alert {
 				return AlertStatelessRetry
 			}
 			return AlertNoAlert
-		}
-	}
-
-	// Send NewSessionTicket if acting as server
-	if !c.isClient && c.config.SendSessionTickets {
-		actions, alert := c.state.NewSessionTicket(
-			c.config.TicketLen,
-			c.config.TicketLifetime,
-			c.config.EarlyDataLifetime)
-
-		for _, action := range actions {
-			alert = c.takeAction(action)
-			if alert != AlertNoAlert {
-				logf(logTypeHandshake, "Error during handshake actions: %v", alert)
-				c.sendAlert(alert)
-				return alert
-			}
 		}
 	}
 
