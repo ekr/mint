@@ -914,3 +914,8 @@ func (c *Conn) label() string {
 	}
 	return "server"
 }
+
+// Interfaces to accommodate QUIC over DTLS
+func (c *Conn) NextRecordNumber() uint64 {
+	return c.out.cipher.combineSeq(c.config.UseDTLS)
+}

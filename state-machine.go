@@ -137,6 +137,8 @@ func (state *stateConnected) KeyUpdate(request KeyUpdateRequest) ([]HandshakeAct
 }
 
 func (state *stateConnected) NewSessionTicket(length int, lifetime, earlyDataLifetime uint32) ([]HandshakeAction, Alert) {
+	logf(logTypeHandshake, "Sending NewSessionTicket")
+
 	tkt, err := NewSessionTicket(length, lifetime)
 	if err != nil {
 		logf(logTypeHandshake, "[StateConnected] Error generating NewSessionTicket: %v", err)
