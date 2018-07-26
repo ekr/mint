@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/bifurcation/mint/syntax"
 	"io"
 	"net"
 	"reflect"
@@ -913,4 +914,48 @@ func (c *Conn) label() string {
 		return "client"
 	}
 	return "server"
+}
+
+type HashAlgorithm uint8
+
+const (
+	HashSHA256 = HashAlgorithm(4)
+	HashSHA384 = HashAlgorithm(5)
+)
+
+type DerivedPskIdentity struct {
+	baseIdentity  []byte `tls:"head=2,min=1"`
+	hashAlgorithm HashAlgorithm
+}
+
+func DeriveFromUniversalPsk(baseIdentity []byte, baseKey []byte, baseHash crypto.Hash, targetHash crypto.Hash) (identity []byte, key []byte, err error) {
+	var hashAlg HashAlgorithm
+	var targetLen int
+
+	switch targetHash {
+	case crypto.SHA256:
+		hashAlg = HashSHA256
+		targetLen = 32
+	case crypto.SHA384:
+		hashAlg = HashSHA384
+		targetLen = 48
+	default:
+		return nil, nil, fmt.Errorf("Hash %v not allowed", baseHash)
+	}
+
+	identityStruct := DerivedPskIdentity{
+		baseIdentity,
+		hashAlg,
+	}
+
+	identity, err = syntax.Marshal(&identityStruct)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pskx := HkdfExtract(baseHash, nil, baseKey)
+	idHash := baseHash.New().Sum(identity)
+	key = HkdfExpandLabel(baseHash, pskx, "derived psk", idHash, targetLen)
+
+	return
 }

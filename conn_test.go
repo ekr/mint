@@ -8,6 +8,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -180,7 +181,7 @@ var (
 	psk  PreSharedKey
 	psks *PSKMapCache
 
-	basicConfig, dtlsConfig, nbConfig, nbDTLSConfig, hrrConfig, alpnConfig, pskConfig, pskDTLSConfig, pskECDHEConfig, pskDHEConfig, resumptionConfig, ffdhConfig, x25519Config *Config
+	basicConfig, dtlsConfig, nbConfig, nbDTLSConfig, hrrConfig, alpnConfig, pskConfig, upskConfig, pskDTLSConfig, pskECDHEConfig, pskDHEConfig, resumptionConfig, ffdhConfig, x25519Config *Config
 )
 
 func init() {
@@ -267,6 +268,27 @@ func init() {
 		ServerName:         serverName,
 		CipherSuites:       []CipherSuite{TLS_AES_128_GCM_SHA256},
 		PSKs:               psks,
+		AllowEarlyData:     true,
+		InsecureSkipVerify: true,
+	}
+
+	dpskIdentity, dpskKey, err := DeriveFromUniversalPsk(psk.Identity, psk.Key, crypto.SHA256, crypto.SHA256)
+	dpsk := PreSharedKey{
+		CipherSuite:  TLS_AES_128_GCM_SHA256,
+		IsResumption: false,
+		Identity:     dpskIdentity,
+		Key:          dpskKey,
+	}
+	assert(err == nil)
+	dpsks := &PSKMapCache{
+		serverName:                       dpsk,
+		hex.EncodeToString(dpskIdentity): dpsk,
+	}
+
+	upskConfig = &Config{
+		ServerName:         serverName,
+		CipherSuites:       []CipherSuite{TLS_AES_128_GCM_SHA256},
+		PSKs:               dpsks,
 		AllowEarlyData:     true,
 		InsecureSkipVerify: true,
 	}
@@ -739,7 +761,8 @@ func TestClientAuthVerifyPeerRejected(t *testing.T) {
 }
 
 func TestPSKFlows(t *testing.T) {
-	for _, conf := range []*Config{pskConfig, pskECDHEConfig, pskDHEConfig} {
+	for _, conf := range []*Config{pskConfig, upskConfig, pskECDHEConfig, pskDHEConfig} {
+		fmt.Println(conf)
 		cConn, sConn := pipe()
 
 		client := Client(cConn, conf)

@@ -455,6 +455,7 @@ func (state clientStateWaitSH) Next(hr handshakeMessageReader) (HandshakeState, 
 	}
 
 	if foundExts[ExtensionTypePreSharedKey] && (serverPSK.SelectedIdentity == 0) {
+		logf(logTypeHandshake, "Server agreed to PSK")
 		state.Params.UsingPSK = true
 	}
 
